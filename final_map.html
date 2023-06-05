@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<title>MAPEX INTERACTIVE MAP</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+        integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+        crossorigin=""/>
+        <style>
+            #map { 
+                position: absolute;
+                height: 100%;
+                width: 100%;
+                z-index: 0}
+
+            #toggleMarkers{
+                position: absolute;
+                top: 21px;
+                right: 10px;
+                width: 20px;
+                height: 20px;
+                z-index: 1;
+            }
+
+            #toggleMarkersMAPEX{
+                position: absolute;
+                top: 61px;
+                right: 10px;
+                width: 20px;
+                height: 20px;
+                z-index: 1;
+            }
+
+            #label{
+                position: absolute;
+                top: 20px;
+                right: 120px;
+                z-index: 2;
+            }
+            .hide-labels {
+                position: absolute;
+                top: 20px;
+                right: 40px;
+                width: 150px;
+                background-color: #fb0081;
+                border-radius: 10px;
+                padding: 5px 10px;
+                z-index: 1;
+            }
+
+            .hide-labels2 {
+                position: absolute;
+                top: 60px;
+                right: 40px;
+                width: 150px;
+                background-color: #004084;
+                color: white;
+                border-radius: 10px;
+                padding: 5px 10px;
+                z-index: 1;
+            }
+
+            .leaflet-popup-content {
+                width: 300px;
+
+            }
+
+            .leaflet-popup-content img {
+                max-width: 100%;
+
+            }
+
+
+        </style>
+    </head>
+    <body>
+
+        <div id="map"></div>
+        <input type="checkbox" id="toggleMarkers" />
+        <div class="hide-labels">Hide Flicker Markers</div>
+
+        <input type="checkbox" id="toggleMarkersMAPEX" />
+        <div class="hide-labels2">Hide MAPEX Markers</div>
+
+        <script src="src/leaflet.js"></script>
+        <script src="src/leaflet.markercluster.js"></script>
+
+        <link rel="stylesheet" href="src/leaflet.css" />
+        <link rel="stylesheet" href="src/MarkerCluster.css" />
+        <link rel="stylesheet" href="src/MarkerCluster.Default.css" />
+
+
+        <script>
+            var svgUrl = 'photo2.svg';
+            var icon = L.icon({
+                iconUrl: svgUrl,
+                iconSize: [20, 20],  // Set the size of the marker
+                iconAnchor: [10, 10]  // Set the position of the marker relative to its anchor point
+            });
+
+            var svgUrlMAPEX = 'photo3.svg';
+            var iconMAPEX = L.icon({
+                iconUrl: svgUrlMAPEX,
+                iconSize: [20, 20],  // Set the size of the marker
+                iconAnchor: [10, 10]  // Set the position of the marker relative to its anchor point
+            })
+
+            var markers = [
+                {id: 50565747623, owner: '162684392@N05', datetaken: '2019-09-12', dateupload: '2020-11-04', latitude: 47.023231, longitude: 12.634191, url_o: 'https://live.staticflickr.com/65535/50565747623_b3491184a0_o.jpg', url_m: 'https://live.staticflickr.com/65535/50565747623_ebf2796895.jpg', url_n: 'https://live.staticflickr.com/65535/50565747623_ebf2796895_n.jpg', title: 'Ogre', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 5491963157, owner: '79669681@N00', datetaken: '2011-02-18', dateupload: '2011-03-02', latitude: 47.010847, longitude: 12.636352, url_o: 'https://live.staticflickr.com/5139/5491963157_d83ab3f1ec_o.jpg', url_m: 'https://live.staticflickr.com/5139/5491963157_09be89cd1a.jpg', url_n: 'https://live.staticflickr.com/5139/5491963157_09be89cd1a_n.jpg', title: 'P1010726', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14774693866, owner: '12639178@N07', datetaken: '2014-07-23', dateupload: '2014-07-31', latitude: 47.045833, longitude: 12.692777, url_o: 'https://live.staticflickr.com/5596/14774693866_fc9da80e8f_o.jpg', url_m: 'https://live.staticflickr.com/5596/14774693866_92e4ec01d0.jpg', url_n: 'https://live.staticflickr.com/5596/14774693866_92e4ec01d0_n.jpg', title: 'Soldanella alpina , NGIDn726467628', height_m: 500, width_m: 375, height_n: 320, width_n: 240},
+                {id: 15176339182, owner: '37052835@N04', datetaken: '2014-09-08', dateupload: '2014-09-08', latitude: 47.007722, longitude: 12.637064, url_o: 'https://live.staticflickr.com/5592/15176339182_3bef3ede75_o.jpg', url_m: 'https://live.staticflickr.com/5592/15176339182_e1b85b4b40.jpg', url_n: 'https://live.staticflickr.com/5592/15176339182_e1b85b4b40_n.jpg', title: 'The Grossglockner', height_m: 500, width_m: 500, height_n: 320, width_n: 320},
+                {id: 4346690115, owner: '68222897@N00', datetaken: '2009-09-30', dateupload: '2010-02-10', latitude: 47.033447, longitude: 12.717091, url_o: 'https://live.staticflickr.com/2694/4346690115_922f60dd16_o.jpg', url_m: 'https://live.staticflickr.com/2694/4346690115_8bb5a8625a.jpg', url_n: 'https://live.staticflickr.com/2694/4346690115_8bb5a8625a_n.jpg', title: 'DSC_0301', height_m: 335, width_m: 500, height_n: 214, width_n: 320},
+                {id: 29028090623, owner: '68222897@N00', datetaken: '2016-09-09', dateupload: '2016-09-13', latitude: 47.034083, longitude: 12.716741, url_o: 'https://live.staticflickr.com/8318/29028090623_4b0fb20568_o.jpg', url_m: 'https://live.staticflickr.com/8318/29028090623_004b22aa47.jpg', url_n: 'https://live.staticflickr.com/8318/29028090623_004b22aa47_n.jpg', title: 'P1100744', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14778255266, owner: '12639178@N07', datetaken: '2014-07-23', dateupload: '2014-08-01', latitude: 47.043333, longitude: 12.692777, url_o: 'https://live.staticflickr.com/3847/14778255266_c3c091c56c_o.jpg', url_m: 'https://live.staticflickr.com/3847/14778255266_1620e69cbc.jpg', url_n: 'https://live.staticflickr.com/3847/14778255266_1620e69cbc_n.jpg', title: 'Oxytropis campestris , NGIDn1983100365', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 6136886721, owner: '17027860@N00', datetaken: '2011-08-27', dateupload: '2011-09-11', latitude: 47.003045, longitude: 12.620114, url_o: 'https://live.staticflickr.com/6158/6136886721_988734f5e9_o.jpg', url_m: 'https://live.staticflickr.com/6158/6136886721_fb8a2cdb02.jpg', url_n: 'https://live.staticflickr.com/6158/6136886721_fb8a2cdb02_n.jpg', title: 'Austria 254', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 50317675752, owner: '55276107@N00', datetaken: '2020-08-21', dateupload: '2020-09-07', latitude: 47.023414, longitude: 12.68967, url_o: 'https://live.staticflickr.com/65535/50317675752_3dbb4b144a_o.jpg', url_m: 'https://live.staticflickr.com/65535/50317675752_1c14143641.jpg', url_n: 'https://live.staticflickr.com/65535/50317675752_1c14143641_n.jpg', title: 'Großglockner', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 9516865075, owner: '46687906@N08', datetaken: '2013-08-01', dateupload: '2013-08-15', latitude: 47.035911, longitude: 12.69285, url_o: 'https://live.staticflickr.com/7285/9516865075_bb2a144211_o.jpg', url_m: 'https://live.staticflickr.com/7285/9516865075_fcd6cd9c39.jpg', url_n: 'https://live.staticflickr.com/7285/9516865075_fcd6cd9c39_n.jpg', title: 'DSCN3007', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 6137423610, owner: '17027860@N00', datetaken: '2011-08-27', dateupload: '2011-09-11', latitude: 47.003045, longitude: 12.620114, url_o: 'https://live.staticflickr.com/6184/6137423610_903cb0100c_o.jpg', url_m: 'https://live.staticflickr.com/6184/6137423610_419fd368ee.jpg', url_n: 'https://live.staticflickr.com/6184/6137423610_419fd368ee_n.jpg', title: 'Austria 152', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 30438234957, owner: '88553830@N02', datetaken: '2018-10-14', dateupload: '2018-10-14', latitude: 47.024555, longitude: 12.689372, url_o: 'https://live.staticflickr.com/1921/30438234957_c71fa1c43d_o.jpg', url_m: 'https://live.staticflickr.com/1921/30438234957_bf4b3a0b84.jpg', url_n: 'https://live.staticflickr.com/1921/30438234957_bf4b3a0b84_n.jpg', title: '20181014_121916', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 3443394635, owner: '46656862@N00', datetaken: '2008-07-03', dateupload: '2009-04-15', latitude: 47.026194, longitude: 12.704955, url_o: 'https://live.staticflickr.com/3561/3443394635_b5563f8b01_o.jpg', url_m: 'https://live.staticflickr.com/3561/3443394635_4bb3a8ef6d.jpg', url_n: 'https://live.staticflickr.com/3561/3443394635_4bb3a8ef6d_n.jpg', title: 'IMG_0744', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 14987699556, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-23', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/5566/14987699556_01f9434737_o.jpg', url_m: 'https://live.staticflickr.com/5566/14987699556_efd55e75d7.jpg', url_n: 'https://live.staticflickr.com/5566/14987699556_efd55e75d7_n.jpg', title: '_DSC3916.jpg', height_m: 331, width_m: 500, height_n: 212, width_n: 320},
+                {id: 9523267659, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.028127, longitude: 12.639125, url_o: 'https://live.staticflickr.com/2842/9523267659_6ae2961c2a_o.jpg', url_m: 'https://live.staticflickr.com/2842/9523267659_2e49b712db.jpg', url_n: 'https://live.staticflickr.com/2842/9523267659_2e49b712db_n.jpg', title: 'DSCN3060', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9526067428, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.04043, longitude: 12.62243, url_o: 'https://live.staticflickr.com/7328/9526067428_97274f707f_o.jpg', url_m: 'https://live.staticflickr.com/7328/9526067428_c8736deb86.jpg', url_n: 'https://live.staticflickr.com/7328/9526067428_c8736deb86_n.jpg', title: 'DSCN3096', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 8027878071, owner: '40595395@N05', datetaken: '2012-08-23', dateupload: '2012-09-26', latitude: 47.027641, longitude: 12.6904, url_o: 'https://live.staticflickr.com/8317/8027878071_3d1003c435_o.jpg', url_m: 'https://live.staticflickr.com/8317/8027878071_4383beb77c.jpg', url_n: 'https://live.staticflickr.com/8317/8027878071_4383beb77c_n.jpg', title: 'Valle Kodnitzal', height_m: 332, width_m: 500, height_n: 213, width_n: 320},
+                {id: 14824144727, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-23', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/5583/14824144727_3a8e284247_o.jpg', url_m: 'https://live.staticflickr.com/5583/14824144727_cdd8c22617.jpg', url_n: 'https://live.staticflickr.com/5583/14824144727_cdd8c22617_n.jpg', title: '_DSC3885.jpg', height_m: 331, width_m: 500, height_n: 212, width_n: 320},
+                {id: 9517446617, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-15', latitude: 47.045586, longitude: 12.622544, url_o: 'https://live.staticflickr.com/5484/9517446617_ee99d0368e_o.jpg', url_m: 'https://live.staticflickr.com/5484/9517446617_0546a7b561.jpg', url_n: 'https://live.staticflickr.com/5484/9517446617_0546a7b561_n.jpg', title: 'DSCN3110', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 52700986259, owner: '32368927@N02', datetaken: '2022-10-11', dateupload: '2023-02-20', latitude: 47.001852, longitude: 12.643911, url_o: 'https://live.staticflickr.com/65535/52700986259_f1f03eaf4f_o.jpg', url_m: 'https://live.staticflickr.com/65535/52700986259_ef6a28091f.jpg', url_n: 'https://live.staticflickr.com/65535/52700986259_ef6a28091f_n.jpg', title: 'Light Falls', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 9519751294, owner: '46687906@N08', datetaken: '2013-08-01', dateupload: '2013-08-15', latitude: 47.035508, longitude: 12.693047, url_o: 'https://live.staticflickr.com/7373/9519751294_456bbf861c_o.jpg', url_m: 'https://live.staticflickr.com/7373/9519751294_537c8a3920.jpg', url_n: 'https://live.staticflickr.com/7373/9519751294_537c8a3920_n.jpg', title: 'DSCN3026', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9516892649, owner: '46687906@N08', datetaken: '2013-08-01', dateupload: '2013-08-15', latitude: 47.022738, longitude: 12.686469, url_o: 'https://live.staticflickr.com/2894/9516892649_407a9f8b44_o.jpg', url_m: 'https://live.staticflickr.com/2894/9516892649_fda959bdc1.jpg', url_n: 'https://live.staticflickr.com/2894/9516892649_fda959bdc1_n.jpg', title: 'DSCN2987', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9526022210, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.029519, longitude: 12.62398, url_o: 'https://live.staticflickr.com/3695/9526022210_7131a6fbfe_o.jpg', url_m: 'https://live.staticflickr.com/3695/9526022210_ed1729f65a.jpg', url_n: 'https://live.staticflickr.com/3695/9526022210_ed1729f65a_n.jpg', title: 'DSCN3073', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9517423515, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-15', latitude: 47.048394, longitude: 12.623363, url_o: 'https://live.staticflickr.com/3826/9517423515_12d8bb1e06_o.jpg', url_m: 'https://live.staticflickr.com/3826/9517423515_a5a8ebaba4.jpg', url_n: 'https://live.staticflickr.com/3826/9517423515_a5a8ebaba4_n.jpg', title: 'DSCN3122', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14823914629, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-23', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/3919/14823914629_1a2071f476_o.jpg', url_m: 'https://live.staticflickr.com/3919/14823914629_7b4ab14cbd.jpg', url_n: 'https://live.staticflickr.com/3919/14823914629_7b4ab14cbd_n.jpg', title: '_DSC3792.jpg', height_m: 331, width_m: 500, height_n: 212, width_n: 320},
+                {id: 14824118867, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-23', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/3869/14824118867_85f723229a_o.jpg', url_m: 'https://live.staticflickr.com/3869/14824118867_c3c968ef1e.jpg', url_n: 'https://live.staticflickr.com/3869/14824118867_c3c968ef1e_n.jpg', title: '_DSC3844.jpg', height_m: 331, width_m: 500, height_n: 212, width_n: 320},
+                {id: 3443391501, owner: '46656862@N00', datetaken: '2008-07-03', dateupload: '2009-04-15', latitude: 47.032725, longitude: 12.72288, url_o: 'https://live.staticflickr.com/3358/3443391501_3fd4c884c6_o.jpg', url_m: 'https://live.staticflickr.com/3358/3443391501_81fc088d39.jpg', url_n: 'https://live.staticflickr.com/3358/3443391501_81fc088d39_n.jpg', title: 'IMG_0735', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 9523259285, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.025919, longitude: 12.631205, url_o: 'https://live.staticflickr.com/2888/9523259285_e20927257d_o.jpg', url_m: 'https://live.staticflickr.com/2888/9523259285_d692fe71d6.jpg', url_n: 'https://live.staticflickr.com/2888/9523259285_d692fe71d6_n.jpg', title: 'DSCN3064', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 6136872731, owner: '17027860@N00', datetaken: '2011-08-26', dateupload: '2011-09-11', latitude: 47.003045, longitude: 12.620114, url_o: 'https://live.staticflickr.com/6185/6136872731_f45e91bdcb_o.jpg', url_m: 'https://live.staticflickr.com/6185/6136872731_c9b4e82df0.jpg', url_n: 'https://live.staticflickr.com/6185/6136872731_c9b4e82df0_n.jpg', title: 'Austria 93', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 4346737517, owner: '68222897@N00', datetaken: '2009-10-01', dateupload: '2010-02-10', latitude: 47.041574, longitude: 12.710047, url_o: 'https://live.staticflickr.com/4012/4346737517_d1bbe22355_o.jpg', url_m: 'https://live.staticflickr.com/4012/4346737517_b38d39b3f5.jpg', url_n: 'https://live.staticflickr.com/4012/4346737517_b38d39b3f5_n.jpg', title: 'DSC_0330', height_m: 500, width_m: 335, height_n: 320, width_n: 214},
+                {id: 19480689991, owner: '126946378@N07', datetaken: '2015-07-03', dateupload: '2015-07-06', latitude: 47.047072, longitude: 12.694186, url_o: 'https://live.staticflickr.com/3922/19480689991_fd11d9bea6_o.jpg', url_m: 'https://live.staticflickr.com/3922/19480689991_3c750e8649.jpg', url_n: 'https://live.staticflickr.com/3922/19480689991_3c750e8649_n.jpg', title: '19269165230_0e43a64a73_o', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 29361538410, owner: '68222897@N00', datetaken: '2016-09-09', dateupload: '2016-09-13', latitude: 47.047005, longitude: 12.711002, url_o: 'https://live.staticflickr.com/8367/29361538410_2b7fd34e8f_o.jpg', url_m: 'https://live.staticflickr.com/8367/29361538410_51c63d60ae.jpg', url_n: 'https://live.staticflickr.com/8367/29361538410_51c63d60ae_n.jpg', title: 'Exkursion Alpen 2016', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 29448604145, owner: '144379012@N05', datetaken: '2016-06-07', dateupload: '2016-09-04', latitude: 47.021458, longitude: 12.688105, url_o: 'https://live.staticflickr.com/8152/29448604145_be8fb012c1_o.jpg', url_m: 'https://live.staticflickr.com/8152/29448604145_f7630d45f0.jpg', url_n: 'https://live.staticflickr.com/8152/29448604145_f7630d45f0_n.jpg', title: 'Lucknerhaus  Kalser Glocknerstraße', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 9526010986, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.029769, longitude: 12.622325, url_o: 'https://live.staticflickr.com/3752/9526010986_4cbd5c23f0_o.jpg', url_m: 'https://live.staticflickr.com/3752/9526010986_b64c0e0c0a.jpg', url_n: 'https://live.staticflickr.com/3752/9526010986_b64c0e0c0a_n.jpg', title: 'DSCN3078', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 5491953199, owner: '79669681@N00', datetaken: '2011-02-17', dateupload: '2011-03-02', latitude: 47.002055, longitude: 12.645138, url_o: 'https://live.staticflickr.com/5219/5491953199_2da0b8e219_o.jpg', url_m: 'https://live.staticflickr.com/5219/5491953199_f67da6ce45.jpg', url_n: 'https://live.staticflickr.com/5219/5491953199_f67da6ce45_n.jpg', title: 'P1010704', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 5491950631, owner: '79669681@N00', datetaken: '2011-02-15', dateupload: '2011-03-02', latitude: 47.0023, longitude: 12.628605, url_o: 'https://live.staticflickr.com/5098/5491950631_2b99cfb1d4_o.jpg', url_m: 'https://live.staticflickr.com/5098/5491950631_3343b68ba8.jpg', url_n: 'https://live.staticflickr.com/5098/5491950631_3343b68ba8_n.jpg', title: 'P1010694', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 3779365434, owner: '70008341@N00', datetaken: '2009-07-11', dateupload: '2009-08-01', latitude: 47.022677, longitude: 12.689047, url_o: 'https://live.staticflickr.com/3546/3779365434_e5f62a51b6_o.jpg', url_m: 'https://live.staticflickr.com/3546/3779365434_e93c47c1d2.jpg', url_n: 'https://live.staticflickr.com/3546/3779365434_e93c47c1d2_n.jpg', title: 'Wanderung am Großglockner 11.7.2009 (100).jpg', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 29975739126, owner: '125915412@N06', datetaken: '2016-08-07', dateupload: '2016-09-29', latitude: 47.00765, longitude: 12.650624, url_o: 'https://live.staticflickr.com/8135/29975739126_600caa377f_o.jpg', url_m: 'https://live.staticflickr.com/8135/29975739126_b216ebdff4.jpg', url_n: 'https://live.staticflickr.com/8135/29975739126_b216ebdff4_n.jpg', title: 'Kals am Grossglockner', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 3443392873, owner: '46656862@N00', datetaken: '2008-07-03', dateupload: '2009-04-15', latitude: 47.032597, longitude: 12.720941, url_o: 'https://live.staticflickr.com/3539/3443392873_7b82019e71_o.jpg', url_m: 'https://live.staticflickr.com/3539/3443392873_708cd6c599.jpg', url_n: 'https://live.staticflickr.com/3539/3443392873_708cd6c599_n.jpg', title: 'IMG_0739', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 32935988168, owner: '149944526@N07', datetaken: '2017-06-24', dateupload: '2019-01-20', latitude: 47.026033, longitude: 12.690025, url_o: 'https://live.staticflickr.com/7814/32935988168_5ebfdf2d66_o.jpg', url_m: 'https://live.staticflickr.com/7814/32935988168_1014d375e8.jpg', url_n: 'https://live.staticflickr.com/7814/32935988168_1014d375e8_n.jpg', title: 'DSC05609', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 29926641831, owner: '125915412@N06', datetaken: '2016-08-07', dateupload: '2016-09-29', latitude: 47.040336, longitude: 12.69039, url_o: 'https://live.staticflickr.com/5161/29926641831_4f6435fa17_o.jpg', url_m: 'https://live.staticflickr.com/5161/29926641831_d89832d274.jpg', url_n: 'https://live.staticflickr.com/5161/29926641831_d89832d274_n.jpg', title: 'Ce quil reste de la cache détruite par les travaux', height_m: 500, width_m: 333, height_n: 320, width_n: 213},
+                {id: 9516864709, owner: '46687906@N08', datetaken: '2013-08-01', dateupload: '2013-08-15', latitude: 47.029897, longitude: 12.689625, url_o: 'https://live.staticflickr.com/3716/9516864709_e26136b970_o.jpg', url_m: 'https://live.staticflickr.com/3716/9516864709_656b09739d.jpg', url_n: 'https://live.staticflickr.com/3716/9516864709_656b09739d_n.jpg', title: 'DSCN3003', height_m: 500, width_m: 332, height_n: 320, width_n: 212},
+                {id: 9523246245, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.027752, longitude: 12.62405, url_o: 'https://live.staticflickr.com/3672/9523246245_eff8c09c9d_o.jpg', url_m: 'https://live.staticflickr.com/3672/9523246245_01a3804e1e.jpg', url_n: 'https://live.staticflickr.com/3672/9523246245_01a3804e1e_n.jpg', title: 'DSCN3070', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 6136883711, owner: '17027860@N00', datetaken: '2011-08-27', dateupload: '2011-09-11', latitude: 47.003045, longitude: 12.620114, url_o: 'https://live.staticflickr.com/6177/6136883711_4b564ebf57_o.jpg', url_m: 'https://live.staticflickr.com/6177/6136883711_0c14e303fc.jpg', url_n: 'https://live.staticflickr.com/6177/6136883711_0c14e303fc_n.jpg', title: 'Austria 223', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 7833272392, owner: '70008341@N00', datetaken: '2012-08-03', dateupload: '2012-08-21', latitude: 47.023955, longitude: 12.635483, url_o: 'https://live.staticflickr.com/8432/7833272392_914ae74568_o.jpg', url_m: 'https://live.staticflickr.com/8432/7833272392_48efdb1d47.jpg', url_n: 'https://live.staticflickr.com/8432/7833272392_48efdb1d47_n.jpg', title: 'Dorfertal am 3.8.2012', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 14794398241, owner: '12639178@N07', datetaken: '2014-07-23', dateupload: '2014-07-31', latitude: 47.036669, longitude: 12.692638, url_o: 'https://live.staticflickr.com/5573/14794398241_0b2a02d545_o.jpg', url_m: 'https://live.staticflickr.com/5573/14794398241_33f423089b.jpg', url_n: 'https://live.staticflickr.com/5573/14794398241_33f423089b_n.jpg', title: 'Senecio doronicum , NGIDn205613899', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 49493996797, owner: '145589989@N04', datetaken: '2020-02-01', dateupload: '2020-02-05', latitude: 47.011991, longitude: 12.620286, url_o: 'https://live.staticflickr.com/65535/49493996797_0f8f883f17_o.jpg', url_m: 'https://live.staticflickr.com/65535/49493996797_d4d9d64f51.jpg', url_n: 'https://live.staticflickr.com/65535/49493996797_d4d9d64f51_n.jpg', title: 'Matrei 2020', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 32023488423, owner: '30883793@N06', datetaken: '2017-02-09', dateupload: '2017-02-11', latitude: 47.015016, longitude: 12.641336, url_o: 'https://live.staticflickr.com/2285/32023488423_2cd661b011_o.jpg', url_m: 'https://live.staticflickr.com/2285/32023488423_6e1099c45a.jpg', url_n: 'https://live.staticflickr.com/2285/32023488423_6e1099c45a_n.jpg', title: 'Osttiroler Schuppen, old shed in Osttirol', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 51380154606, owner: '44583112@N06', datetaken: '2021-08-12', dateupload: '2021-08-15', latitude: 47.039297, longitude: 12.624686, url_o: 'https://live.staticflickr.com/65535/51380154606_95dabf959c_o.jpg', url_m: 'https://live.staticflickr.com/65535/51380154606_61534e25e6.jpg', url_n: 'https://live.staticflickr.com/65535/51380154606_61534e25e6_n.jpg', title: 'partially destroyed hut in the Dorfer valley.', height_m: 247, width_m: 500, height_n: 158, width_n: 320},
+                {id: 29361982180, owner: '68222897@N00', datetaken: '2016-09-09', dateupload: '2016-09-13', latitude: 47.031055, longitude: 12.715313, url_o: 'https://live.staticflickr.com/8689/29361982180_462ca2a032_o.jpg', url_m: 'https://live.staticflickr.com/8689/29361982180_6908be4c6a.jpg', url_n: 'https://live.staticflickr.com/8689/29361982180_6908be4c6a_n.jpg', title: 'P1100752', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14824034118, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-23', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/5553/14824034118_b8f2da8e9a_o.jpg', url_m: 'https://live.staticflickr.com/5553/14824034118_c6eb51f544.jpg', url_n: 'https://live.staticflickr.com/5553/14824034118_c6eb51f544_n.jpg', title: '_DSC3852.jpg', height_m: 500, width_m: 331, height_n: 320, width_n: 212},
+                {id: 9520208940, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-15', latitude: 47.043138, longitude: 12.622119, url_o: 'https://live.staticflickr.com/2882/9520208940_654cf15940_o.jpg', url_m: 'https://live.staticflickr.com/2882/9520208940_d1b1e10eb5.jpg', url_n: 'https://live.staticflickr.com/2882/9520208940_d1b1e10eb5_n.jpg', title: 'DSCN3123', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14987667836, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-23', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/3859/14987667836_ac117a771a_o.jpg', url_m: 'https://live.staticflickr.com/3859/14987667836_6a778941b7.jpg', url_n: 'https://live.staticflickr.com/3859/14987667836_6a778941b7_n.jpg', title: '_DSC3855.jpg', height_m: 331, width_m: 500, height_n: 212, width_n: 320},
+                {id: 3443394363, owner: '46656862@N00', datetaken: '2008-07-03', dateupload: '2009-04-15', latitude: 47.026194, longitude: 12.704955, url_o: 'https://live.staticflickr.com/3641/3443394363_f527e06137_o.jpg', url_m: 'https://live.staticflickr.com/3641/3443394363_41fee48815.jpg', url_n: 'https://live.staticflickr.com/3641/3443394363_41fee48815_n.jpg', title: 'IMG_0743', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 9516929349, owner: '46687906@N08', datetaken: '2013-08-01', dateupload: '2013-08-15', latitude: 47.021691, longitude: 12.688413, url_o: 'https://live.staticflickr.com/5498/9516929349_d1576134d8_o.jpg', url_m: 'https://live.staticflickr.com/5498/9516929349_52eb4cddc3.jpg', url_n: 'https://live.staticflickr.com/5498/9516929349_52eb4cddc3_n.jpg', title: 'DSCN3043', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9520238022, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-15', latitude: 47.045186, longitude: 12.62233, url_o: 'https://live.staticflickr.com/5521/9520238022_cb7c30d107_o.jpg', url_m: 'https://live.staticflickr.com/5521/9520238022_a7439a0cf8.jpg', url_n: 'https://live.staticflickr.com/5521/9520238022_a7439a0cf8_n.jpg', title: 'DSCN3108', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14823950869, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-23', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/3884/14823950869_c563466f0e_o.jpg', url_m: 'https://live.staticflickr.com/3884/14823950869_59ff738300.jpg', url_n: 'https://live.staticflickr.com/3884/14823950869_59ff738300_n.jpg', title: '_DSC3869.jpg', height_m: 331, width_m: 500, height_n: 212, width_n: 320},
+                {id: 4347466404, owner: '68222897@N00', datetaken: '2009-09-30', dateupload: '2010-02-10', latitude: 47.034238, longitude: 12.716908, url_o: 'https://live.staticflickr.com/4023/4347466404_77626732e0_o.jpg', url_m: 'https://live.staticflickr.com/4023/4347466404_be1f7c0083.jpg', url_n: 'https://live.staticflickr.com/4023/4347466404_be1f7c0083_n.jpg', title: 'DSC_0322', height_m: 335, width_m: 500, height_n: 214, width_n: 320},
+                {id: 51380154786, owner: '44583112@N06', datetaken: '2021-08-12', dateupload: '2021-08-15', latitude: 47.030405, longitude: 12.625094, url_o: 'https://live.staticflickr.com/65535/51380154786_417072af2f_o.jpg', url_m: 'https://live.staticflickr.com/65535/51380154786_f862826c36.jpg', url_n: 'https://live.staticflickr.com/65535/51380154786_f862826c36_n.jpg', title: 'Dabaklamm at Dorfer valley', height_m: 500, width_m: 461, height_n: 320, width_n: 295},
+                {id: 9523252839, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.030077, longitude: 12.630455, url_o: 'https://live.staticflickr.com/2869/9523252839_94bbd0c76a_o.jpg', url_m: 'https://live.staticflickr.com/2869/9523252839_4e90a5ba09.jpg', url_n: 'https://live.staticflickr.com/2869/9523252839_4e90a5ba09_n.jpg', title: 'DSCN3067', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9520214782, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-15', latitude: 47.048249, longitude: 12.622108, url_o: 'https://live.staticflickr.com/7450/9520214782_74df6ced3e_o.jpg', url_m: 'https://live.staticflickr.com/7450/9520214782_a39b03e83a.jpg', url_n: 'https://live.staticflickr.com/7450/9520214782_a39b03e83a_n.jpg', title: 'DSCN3120', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 31806521320, owner: '148854598@N08', datetaken: '2012-07-04', dateupload: '2017-01-08', latitude: 47.007328, longitude: 12.637399, url_o: 'https://live.staticflickr.com/318/31806521320_1ae4c97c69_o.jpg', url_m: 'https://live.staticflickr.com/318/31806521320_cc19807ff3.jpg', url_n: 'https://live.staticflickr.com/318/31806521320_cc19807ff3_n.jpg', title: 'Kals házai között', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9525992832, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.036083, longitude: 12.623327, url_o: 'https://live.staticflickr.com/3811/9525992832_39bb07c259_o.jpg', url_m: 'https://live.staticflickr.com/3811/9525992832_7739e4394a.jpg', url_n: 'https://live.staticflickr.com/3811/9525992832_7739e4394a_n.jpg', title: 'DSCN3087', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 5492561532, owner: '79669681@N00', datetaken: '2011-02-18', dateupload: '2011-03-02', latitude: 47.010847, longitude: 12.636352, url_o: 'https://live.staticflickr.com/5136/5492561532_4082045b3a_o.jpg', url_m: 'https://live.staticflickr.com/5136/5492561532_1896e5b4b9.jpg', url_n: 'https://live.staticflickr.com/5136/5492561532_1896e5b4b9_n.jpg', title: 'P1010731', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 3778316575, owner: '70008341@N00', datetaken: '2009-07-11', dateupload: '2009-08-01', latitude: 47.039922, longitude: 12.691513, url_o: 'https://live.staticflickr.com/3463/3778316575_388dbd6d99_o.jpg', url_m: 'https://live.staticflickr.com/3463/3778316575_8fcc8ee393.jpg', url_n: 'https://live.staticflickr.com/3463/3778316575_8fcc8ee393_n.jpg', title: 'Wanderung am Großglockner 11.7.2009 (10).jpg', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 5491949823, owner: '79669681@N00', datetaken: '2011-02-15', dateupload: '2011-03-02', latitude: 47.0023, longitude: 12.628605, url_o: 'https://live.staticflickr.com/5292/5491949823_54e20c251a_o.jpg', url_m: 'https://live.staticflickr.com/5292/5491949823_70f793c626.jpg', url_n: 'https://live.staticflickr.com/5292/5491949823_70f793c626_n.jpg', title: 'P1010693', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 5492559302, owner: '79669681@N00', datetaken: '2011-02-18', dateupload: '2011-03-02', latitude: 47.010847, longitude: 12.636352, url_o: 'https://live.staticflickr.com/5055/5492559302_7db92ca8dd_o.jpg', url_m: 'https://live.staticflickr.com/5055/5492559302_cafec6863f.jpg', url_n: 'https://live.staticflickr.com/5055/5492559302_cafec6863f_n.jpg', title: 'P1010727', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 5491965523, owner: '79669681@N00', datetaken: '2011-02-18', dateupload: '2011-03-02', latitude: 47.010847, longitude: 12.636352, url_o: 'https://live.staticflickr.com/5013/5491965523_677662e88a_o.jpg', url_m: 'https://live.staticflickr.com/5013/5491965523_ca361696d6.jpg', url_n: 'https://live.staticflickr.com/5013/5491965523_ca361696d6_n.jpg', title: 'P1010730', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14614595750, owner: '12639178@N07', datetaken: '2014-07-23', dateupload: '2014-08-01', latitude: 47.036666, longitude: 12.692777, url_o: 'https://live.staticflickr.com/3881/14614595750_31e6b1f615_o.jpg', url_m: 'https://live.staticflickr.com/3881/14614595750_d043b24329.jpg', url_n: 'https://live.staticflickr.com/3881/14614595750_d043b24329_n.jpg', title: 'Adenostyles alliariae , NGID1609093717', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9519646636, owner: '46687906@N08', datetaken: '2013-08-01', dateupload: '2013-08-15', latitude: 47.039838, longitude: 12.69048, url_o: 'https://live.staticflickr.com/7372/9519646636_2cdddb0374_o.jpg', url_m: 'https://live.staticflickr.com/7372/9519646636_c315c937a9.jpg', url_n: 'https://live.staticflickr.com/7372/9519646636_c315c937a9_n.jpg', title: 'DSCN3013', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 48439449132, owner: '90881561@N00', datetaken: '2019-07-20', dateupload: '2019-08-02', latitude: 47.040505, longitude: 12.708191, url_o: 'https://live.staticflickr.com/65535/48439449132_36b853fbc6_o.jpg', url_m: 'https://live.staticflickr.com/65535/48439449132_3942d53490.jpg', url_n: 'https://live.staticflickr.com/65535/48439449132_3942d53490_n.jpg', title: 'Pasterze Glacier', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 28377985234, owner: '87604834@N00', datetaken: '2016-08-14', dateupload: '2016-08-15', latitude: 47.031261, longitude: 12.690753, url_o: 'https://live.staticflickr.com/8435/28377985234_d721e3a78d_o.jpg', url_m: 'https://live.staticflickr.com/8435/28377985234_66d5979a05.jpg', url_n: 'https://live.staticflickr.com/8435/28377985234_66d5979a05_n.jpg', title: 'Ködnitzbach', height_m: 265, width_m: 500, height_n: 170, width_n: 320},
+                {id: 14614662818, owner: '12639178@N07', datetaken: '2014-07-23', dateupload: '2014-08-01', latitude: 47.02933, longitude: 12.690594, url_o: 'https://live.staticflickr.com/2920/14614662818_5bc18e2efe_o.jpg', url_m: 'https://live.staticflickr.com/2920/14614662818_ec8a943fda.jpg', url_n: 'https://live.staticflickr.com/2920/14614662818_ec8a943fda_n.jpg', title: 'Carex atrata , NGIDn1287531801', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 4347460442, owner: '68222897@N00', datetaken: '2009-09-30', dateupload: '2010-02-10', latitude: 47.034238, longitude: 12.716908, url_o: 'https://live.staticflickr.com/4007/4347460442_a2fbdfdc10_o.jpg', url_m: 'https://live.staticflickr.com/4007/4347460442_a87ef6f9b7.jpg', url_n: 'https://live.staticflickr.com/4007/4347460442_a87ef6f9b7_n.jpg', title: 'DSC_0318', height_m: 335, width_m: 500, height_n: 214, width_n: 320},
+                {id: 9248176952, owner: '61614526@N08', datetaken: '2012-06-12', dateupload: '2013-07-09', latitude: 47.004238, longitude: 12.65418, url_o: 'https://live.staticflickr.com/5472/9248176952_6251c96605_o.jpg', url_m: 'https://live.staticflickr.com/5472/9248176952_8710f2e5b1.jpg', url_n: 'https://live.staticflickr.com/5472/9248176952_8710f2e5b1_n.jpg', title: 'Hängebrücke, Kals am Grossglockner (Austria)', height_m: 334, width_m: 500, height_n: 214, width_n: 320},
+                {id: 6204427588, owner: '68174456@N02', datetaken: '2011-08-15', dateupload: '2011-10-02', latitude: 47.027919, longitude: 12.683544, url_o: 'https://live.staticflickr.com/6179/6204427588_7acd2ca9ce_o.jpg', url_m: 'https://live.staticflickr.com/6179/6204427588_674b73f7fd.jpg', url_n: 'https://live.staticflickr.com/6179/6204427588_674b73f7fd_n.jpg', title: 'IMG-20110810-00031', height_m: 500, width_m: 375, height_n: 320, width_n: 240},
+                {id: 9517448601, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-15', latitude: 47.045202, longitude: 12.622394, url_o: 'https://live.staticflickr.com/7413/9517448601_030f65e149_o.jpg', url_m: 'https://live.staticflickr.com/7413/9517448601_db06260f6b.jpg', url_n: 'https://live.staticflickr.com/7413/9517448601_db06260f6b_n.jpg', title: 'DSCN3109', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14610885718, owner: '12639178@N07', datetaken: '2014-07-23', dateupload: '2014-07-31', latitude: 47.036666, longitude: 12.692222, url_o: 'https://live.staticflickr.com/5577/14610885718_fe2de996aa_o.jpg', url_m: 'https://live.staticflickr.com/5577/14610885718_4b42a51295.jpg', url_n: 'https://live.staticflickr.com/5577/14610885718_4b42a51295_n.jpg', title: 'Senecio doronicum , NGID1271554820', height_m: 500, width_m: 375, height_n: 320, width_n: 240},
+                {id: 29448601595, owner: '144379012@N05', datetaken: '2016-06-07', dateupload: '2016-09-04', latitude: 47.032497, longitude: 12.628222, url_o: 'https://live.staticflickr.com/7770/29448601595_b26d62c035_o.jpg', url_m: 'https://live.staticflickr.com/7770/29448601595_6faa176862.jpg', url_n: 'https://live.staticflickr.com/7770/29448601595_6faa176862_n.jpg', title: 'DSCN3191', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 27642320847, owner: '25625826@N00', datetaken: '2018-06-01', dateupload: '2018-06-02', latitude: 47.002213, longitude: 12.645136, url_o: 'https://live.staticflickr.com/1721/27642320847_5b56b5d7e8_o.jpg', url_m: 'https://live.staticflickr.com/1721/27642320847_e9ecbc4899.jpg', url_n: 'https://live.staticflickr.com/1721/27642320847_e9ecbc4899_n.jpg', title: 'Grossglockner 2018', height_m: 500, width_m: 500, height_n: 320, width_n: 320},
+                {id: 9517431563, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-15', latitude: 47.048288, longitude: 12.623005, url_o: 'https://live.staticflickr.com/3683/9517431563_af20a0dc27_o.jpg', url_m: 'https://live.staticflickr.com/3683/9517431563_1216db9d5d.jpg', url_n: 'https://live.staticflickr.com/3683/9517431563_1216db9d5d_n.jpg', title: 'DSCN3118', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 52701222173, owner: '32368927@N02', datetaken: '2022-10-11', dateupload: '2023-02-20', latitude: 47.001852, longitude: 12.643911, url_o: 'https://live.staticflickr.com/65535/52701222173_060d72954b_o.jpg', url_m: 'https://live.staticflickr.com/65535/52701222173_808c56d27a.jpg', url_n: 'https://live.staticflickr.com/65535/52701222173_808c56d27a_n.jpg', title: 'Austrian Falls - Traveling Boots', height_m: 334, width_m: 500, height_n: 213, width_n: 320},
+                {id: 6137422066, owner: '17027860@N00', datetaken: '2011-08-27', dateupload: '2011-09-11', latitude: 47.003045, longitude: 12.620114, url_o: 'https://live.staticflickr.com/6065/6137422066_a8426674e4_o.jpg', url_m: 'https://live.staticflickr.com/6065/6137422066_c935d7b1ca.jpg', url_n: 'https://live.staticflickr.com/6065/6137422066_c935d7b1ca_n.jpg', title: 'Austria 138', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9526044468, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.025413, longitude: 12.633025, url_o: 'https://live.staticflickr.com/5454/9526044468_a4b65c15d8_o.jpg', url_m: 'https://live.staticflickr.com/5454/9526044468_cf0cfb6693.jpg', url_n: 'https://live.staticflickr.com/5454/9526044468_cf0cfb6693_n.jpg', title: 'DSCN3063', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14614675527, owner: '12639178@N07', datetaken: '2014-07-23', dateupload: '2014-08-01', latitude: 47.046466, longitude: 12.686044, url_o: 'https://live.staticflickr.com/3894/14614675527_95eb62a376_o.jpg', url_m: 'https://live.staticflickr.com/3894/14614675527_860f6fcf65.jpg', url_n: 'https://live.staticflickr.com/3894/14614675527_860f6fcf65_n.jpg', title: 'Androsace obtusifolia , NGIDn1955183805', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14824113737, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-23', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/5569/14824113737_84d898ff01_o.jpg', url_m: 'https://live.staticflickr.com/5569/14824113737_1395f01d68.jpg', url_n: 'https://live.staticflickr.com/5569/14824113737_1395f01d68_n.jpg', title: '_DSC3837.jpg', height_m: 331, width_m: 500, height_n: 212, width_n: 320},
+                {id: 9516958545, owner: '46687906@N08', datetaken: '2013-08-01', dateupload: '2013-08-15', latitude: 47.034916, longitude: 12.692822, url_o: 'https://live.staticflickr.com/5329/9516958545_e1d77bd65d_o.jpg', url_m: 'https://live.staticflickr.com/5329/9516958545_8202593523.jpg', url_n: 'https://live.staticflickr.com/5329/9516958545_8202593523_n.jpg', title: 'High Heels in Mountains', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 48791393243, owner: '28169156@N03', datetaken: '2019-09-13', dateupload: '2019-09-25', latitude: 47.021658, longitude: 12.689166, url_o: 'https://live.staticflickr.com/65535/48791393243_e1a4f9aaec_o.jpg', url_m: 'https://live.staticflickr.com/65535/48791393243_9373f90c68.jpg', url_n: 'https://live.staticflickr.com/65535/48791393243_9373f90c68_n.jpg', title: 'Kals am Großglockner', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 46759327032, owner: '149944526@N07', datetaken: '2017-06-24', dateupload: '2019-01-20', latitude: 47.028022, longitude: 12.689075, url_o: 'https://live.staticflickr.com/7870/46759327032_e8de74cd8c_o.jpg', url_m: 'https://live.staticflickr.com/7870/46759327032_730ea5cabe.jpg', url_n: 'https://live.staticflickr.com/7870/46759327032_730ea5cabe_n.jpg', title: 'DSC05642', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 14828991623, owner: '12639178@N07', datetaken: '2014-07-23', dateupload: '2014-08-02', latitude: 47.048261, longitude: 12.694766, url_o: 'https://live.staticflickr.com/2911/14828991623_61d25fd0d4_o.jpg', url_m: 'https://live.staticflickr.com/2911/14828991623_9d938acc52.jpg', url_n: 'https://live.staticflickr.com/2911/14828991623_9d938acc52_n.jpg', title: 'Draba hoppeana , NGIDn1058796473', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 9525988620, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.037888, longitude: 12.623633, url_o: 'https://live.staticflickr.com/3731/9525988620_26b7dedd9d_o.jpg', url_m: 'https://live.staticflickr.com/3731/9525988620_33f4f0538f.jpg', url_n: 'https://live.staticflickr.com/3731/9525988620_33f4f0538f_n.jpg', title: 'DSCN3089', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 3779095522, owner: '70008341@N00', datetaken: '2009-07-11', dateupload: '2009-08-01', latitude: 47.031416, longitude: 12.68865, url_o: 'https://live.staticflickr.com/2458/3779095522_fbf3631f7d_o.jpg', url_m: 'https://live.staticflickr.com/2458/3779095522_840e1f28d3.jpg', url_n: 'https://live.staticflickr.com/2458/3779095522_840e1f28d3_n.jpg', title: 'Wanderung am Großglockner 11.7.2009 (04).jpg', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 14104298319, owner: '123503969@N08', datetaken: '2014-05-25', dateupload: '2014-05-28', latitude: 47.039072, longitude: 12.69156, url_o: 'https://live.staticflickr.com/5160/14104298319_3f3fa295b0_o.jpg', url_m: 'https://live.staticflickr.com/5160/14104298319_9f12b0e6fe.jpg', url_n: 'https://live.staticflickr.com/5160/14104298319_9f12b0e6fe_n.jpg', title: 'täglich grüßt das Murmeltier (°|°)', height_m: 332, width_m: 500, height_n: 213, width_n: 320},
+                {id: 5492560202, owner: '79669681@N00', datetaken: '2011-02-18', dateupload: '2011-03-02', latitude: 47.010847, longitude: 12.636352, url_o: 'https://live.staticflickr.com/5095/5492560202_3b0c5a4fb2_o.jpg', url_m: 'https://live.staticflickr.com/5095/5492560202_1399d53f4f.jpg', url_n: 'https://live.staticflickr.com/5095/5492560202_1399d53f4f_n.jpg', title: 'P1010728', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 15017253982, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-24', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/5554/15017253982_c5e087e319_o.jpg', url_m: 'https://live.staticflickr.com/5554/15017253982_557642b076.jpg', url_n: 'https://live.staticflickr.com/5554/15017253982_557642b076_n.jpg', title: '_DSC3878.jpg', height_m: 500, width_m: 500, height_n: 320, width_n: 320},
+                {id: 9523273219, owner: '46687906@N08', datetaken: '2013-08-03', dateupload: '2013-08-16', latitude: 47.028052, longitude: 12.639091, url_o: 'https://live.staticflickr.com/5456/9523273219_ec805c33c2_o.jpg', url_m: 'https://live.staticflickr.com/5456/9523273219_8813855a88.jpg', url_n: 'https://live.staticflickr.com/5456/9523273219_8813855a88_n.jpg', title: 'DSCN3057', height_m: 333, width_m: 500, height_n: 213, width_n: 320},
+                {id: 14617198928, owner: '12639178@N07', datetaken: '2014-07-23', dateupload: '2014-08-01', latitude: 47.046466, longitude: 12.686044, url_o: 'https://live.staticflickr.com/2896/14617198928_f761b4e367_o.jpg', url_m: 'https://live.staticflickr.com/2896/14617198928_2faf6d659e.jpg', url_n: 'https://live.staticflickr.com/2896/14617198928_2faf6d659e_n.jpg', title: 'Salix reticulata - Netzweide , NGID1280571258', height_m: 375, width_m: 500, height_n: 240, width_n: 320},
+                {id: 4347468548, owner: '68222897@N00', datetaken: '2009-09-30', dateupload: '2010-02-10', latitude: 47.034238, longitude: 12.716908, url_o: 'https://live.staticflickr.com/2668/4347468548_29fd998526_o.jpg', url_m: 'https://live.staticflickr.com/2668/4347468548_e821da2499.jpg', url_n: 'https://live.staticflickr.com/2668/4347468548_e821da2499_n.jpg', title: 'DSC_0323', height_m: 335, width_m: 500, height_n: 214, width_n: 320},
+                {id: 3443390923, owner: '46656862@N00', datetaken: '2008-07-03', dateupload: '2009-04-15', latitude: 47.032725, longitude: 12.72288, url_o: 'https://live.staticflickr.com/3399/3443390923_fe1880a655_o.jpg', url_m: 'https://live.staticflickr.com/3399/3443390923_40a25578a1.jpg', url_n: 'https://live.staticflickr.com/3399/3443390923_40a25578a1_n.jpg', title: 'IMG_0734', height_m: 281, width_m: 500, height_n: 180, width_n: 320},
+                {id: 15010638195, owner: '40357032@N00', datetaken: '2014-08-18', dateupload: '2014-08-23', latitude: 47.031904, longitude: 12.690217, url_o: 'https://live.staticflickr.com/5554/15010638195_3430f6d040_o.jpg', url_m: 'https://live.staticflickr.com/5554/15010638195_14fe1a6935.jpg', url_n: 'https://live.staticflickr.com/5554/15010638195_14fe1a6935_n.jpg', title: '_DSC3828.jpg', height_m: 331, width_m: 500, height_n: 212, width_n: 320}
+            ];
+
+            var markers_mapex = [
+                {latitude: 47.01998869972222, longitude: 12.688024699722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_094733.jpg', width: 4624, height: 3468},
+                {latitude: 47.0187741, longitude: 12.6885054, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_095414.jpg', width: 4624, height: 3468},
+                {latitude: 47.01889299972222, longitude: 12.6893694, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_095932.jpg', width: 4624, height: 3468},
+                {latitude: 47.0199854, longitude: 12.688703699722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_100652.jpg', width: 4624, height: 3468},
+                {latitude: 47.019910799722226, longitude: 12.688970199722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_100701.jpg', width: 4624, height: 3468},
+                {latitude: 47.01788979972222, longitude: 12.690798799722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_103833.jpg', width: 4624, height: 3468},
+                {latitude: 47.017606299722225, longitude: 12.6915238, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_104525.jpg', width: 4624, height: 3468},
+                {latitude: 47.0159814, longitude: 12.691545299722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_105151.jpg', width: 4624, height: 3468},
+                {latitude: 47.0157437, longitude: 12.693893199722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_110935.jpg', width: 4624, height: 3468},
+                {latitude: 47.0151994, longitude: 12.694422499722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_111535.jpg', width: 4624, height: 3468},
+                {latitude: 47.012199099722224, longitude: 12.697048699722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_114304.jpg', width: 4624, height: 3468},
+                {latitude: 47.0118153, longitude: 12.6954823, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_120205.jpg', width: 4624, height: 3468},
+                {latitude: 47.0097346, longitude: 12.693149, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_122835.jpg', width: 4624, height: 3468},
+                {latitude: 47.00936659972222, longitude: 12.688669199722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_124540.jpg', width: 4624, height: 3468},
+                {latitude: 47.01149709972222, longitude: 12.6844862, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_131321.jpg', width: 4624, height: 3468},
+                {latitude: 47.011512699722225, longitude: 12.6845364, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_131327.jpg', width: 4624, height: 3468},
+                {latitude: 47.011512699722225, longitude: 12.6845364, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_131336.jpg', width: 4624, height: 3468},
+                {latitude: 47.01337224444445, longitude: 12.681549852777778, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Armina/20230512_133008.jpg', width: 4624, height: 2604},
+
+                {latitude: 47.0211089, longitude: 12.688110099722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_093818.jpg', width: 4032, height: 2268},
+                {latitude: 47.018976, longitude: 12.689531099722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_100015.jpg', width: 4032, height: 2268},
+                {latitude: 47.01952479972222, longitude: 12.6891639, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_101948.jpg', width: 4032, height: 2268},
+                {latitude: 47.0195249, longitude: 12.689163699722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_101954.jpg', width: 4032, height: 2268},
+                {latitude: 47.01867179972222, longitude: 12.689619699722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_102750.jpg', width: 4032, height: 2268},
+                {latitude: 47.01877449972222, longitude: 12.6890891, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_102905.jpg', width: 4032, height: 2268},
+                {latitude: 47.017889099722225, longitude: 12.690754, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_103839.jpg', width: 4032, height: 2268},
+                {latitude: 47.0152634, longitude: 12.692176899722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_105907.jpg', width: 4032, height: 2268},
+                {latitude: 47.015353599722225, longitude: 12.694051699722221, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_111514.jpg', width: 4032, height: 2268},
+                {latitude: 47.0152239, longitude: 12.694537, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_111614.jpg', width: 4032, height: 2268},
+                {latitude: 47.015419799722224, longitude: 12.694556499722223, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_113357.jpg', width: 4032, height: 2268},
+                {latitude: 47.01418149972222, longitude: 12.6956801, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_113833.jpg', width: 4032, height: 2268},
+                {latitude: 47.0122269, longitude: 12.6969963, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_115532.jpg', width: 4032, height: 2268},
+                {latitude: 47.0116257, longitude: 12.684609, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_131400.jpg', width: 4032, height: 2268},
+                {latitude: 47.01783509972222, longitude: 12.6865471, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_134702.jpg', width: 4032, height: 2268},
+                {latitude: 47.01797069972222, longitude: 12.688131999722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_135526.jpg', width: 4032, height: 2268},
+                {latitude: 47.01980509972222, longitude: 12.6881812, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_135826.jpg', width: 4032, height: 2268},
+                {latitude: 47.0206321, longitude: 12.688258299722222, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_135941.jpg', width: 4032, height: 2268},
+                {latitude: 47.0212039, longitude: 12.6881868, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_140927.jpg', width: 4032, height: 2268},
+                {latitude: 47.0212039, longitude: 12.6881868, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_140932.jpg', width: 4032, height: 2268},
+                {latitude: 47.0212039, longitude: 12.6881868, datetaken: '2023-05-12', path: './image_data/MAPEX_PICS/Jasmin/20230512_140939.jpg', width: 4032, height: 2268},
+
+                {latitude: 47.019038199722225, longitude: 12.6837189, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Kitty/20230513_103102.jpg', width: 4000, height: 1848},
+                {latitude: 47.018963399722224, longitude: 12.6837154, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Kitty/20230513_103838.jpg', width: 4000, height: 1848},
+                {latitude: 47.019948499722226, longitude: 12.673265799722222, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Kitty/20230513_112036.jpg', width: 4000, height: 1848},
+                {latitude: 47.0196856, longitude: 12.6729661, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Kitty/20230513_112249.jpg', width: 4000, height: 1848},
+                {latitude: 47.019001699722224, longitude: 12.672008699722221, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Kitty/20230513_114133.jpg', width: 4000, height: 1848},
+                {latitude: 47.019275299722224, longitude: 12.6770276, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Kitty/20230513_121022.jpg', width: 4000, height: 1848},
+                {latitude: 47.018994999722224, longitude: 12.679971099722222, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Kitty/20230513_121545.jpg', width: 4000, height: 1848},
+                {latitude: 47.020632499722225, longitude: 12.687963099722221, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Kitty/20230513_124357.jpg', width: 4000, height: 1848},
+
+                {latitude: 47.01975, longitude: 12.684380555555556, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9642.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01914722222222, longitude: 12.683933333333334, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9646.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01900833333333, longitude: 12.683897222222223, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9647.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01911111111111, longitude: 12.683341666666667, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9657.JPEG', width: 2048, height: 1536},
+                {latitude: 47.019130555555556, longitude: 12.682488888888889, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9659.JPEG', width: 2048, height: 1536},
+                {latitude: 47.019133333333336, longitude: 12.682497222222223, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9660.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01904722222222, longitude: 12.680947222222223, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9664.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01898888888889, longitude: 12.678702777777778, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9671.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01900555555556, longitude: 12.678363888888889, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9672.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01936666666667, longitude: 12.676313888888888, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9677.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01949722222222, longitude: 12.672716666666666, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9691.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01898611111111, longitude: 12.671852777777778, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9700.JPEG', width: 2048, height: 1536},
+                {latitude: 47.018905555555556, longitude: 12.671902777777778, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9701.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01932222222222, longitude: 12.676697222222222, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9741.JPEG', width: 1536, height: 2048},
+                {latitude: 47.01906944444445, longitude: 12.678061111111111, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9749.JPEG', width: 2048, height: 1536},
+                {latitude: 47.01960277777778, longitude: 12.683847222222223, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9756.JPEG', width: 2048, height: 1536},
+                {latitude: 47.020244444444444, longitude: 12.687722222222222, datetaken: '2023-05-13', path: './image_data/MAPEX_PICS/Balsa/IMG_9758.JPEG', width: 2048, height: 1536}
+
+              ]
+            
+            var _epsg = L.CRS.EPSG3857;
+
+            var map = L.map('map', {crs: _epsg}).setView([47.0251, 12.6695], 15);
+            L.tileLayer('Tiles/{z}/{x}/{y}.png', {
+                minZoom: 13,
+                maxZoom: 16
+            }).addTo(map);
+
+            var popupContents = []
+
+            function popupParent(marker){
+                var popupContent = document.createElement('div');
+                popupContent.style.display = 'flex';
+                //popupContent.style.width = marker.width_n;
+                popupContent.style.flexDirection = 'column';
+                popupContent.style.alignItems = 'center';
+                popupContent.style.width = "auto";
+
+                var popupImageContainer = document.createElement('div');
+                popupImageContainer.style.display = 'flex';
+                popupImageContainer.style.margin = 'auto';
+
+                popupImageContainer.style.textAlign = 'center';
+                popupImageContainer.style.justifyContent = 'center';
+                popupImageContainer.style.marginBottom = '10px';
+
+                return [popupContent, popupImageContainer]
+            }
+
+            function createMAPEXContent(marker, type='MAPEX'){
+                var [popupContent, popupImageContainer] = popupParent(marker)
+
+                var imageWidth = marker.width / 10;  // Get the actual width of the image
+                var imageHeight = marker.height / 10; // Get the actual height of the image
+
+                var containerWidth = (imageWidth / imageHeight) * imageWidth;
+
+                var popupLinkToOriginal = document.createElement('a');
+                popupLinkToOriginal.href = marker.path.slice(2);
+                popupLinkToOriginal.target = '_blank';
+                popupLinkToOriginal.textContent = 'Large Image';
+                popupLinkToOriginal.style.justifyContent = 'center';
+
+                // if (type == 'FLICKER'){
+                //     popupLinkToOriginal.href = marker.url_o;
+                // }
+
+                var popupImage = document.createElement('img');
+                popupImage.src = marker.path;
+
+                var popupLinksContainer = document.createElement('div');
+                popupLinksContainer.style.display = 'flex';
+                popupLinksContainer.style.justifyContent = 'center';
+                popupLinksContainer.appendChild(popupLinkToOriginal);
+
+                var popupImageContainer = document.createElement('div');
+                popupImageContainer.style.display = 'flex';
+                popupImageContainer.style.margin = 'auto';
+                popupImageContainer.style.textAlign = 'center';
+                popupImageContainer.style.justifyContent = 'center';
+                popupImageContainer.style.marginBottom = '10px';
+                popupImageContainer.appendChild(popupImage);
+
+                var popupText = document.createElement('h2');
+                popupText.textContent = "Taken by " + marker.path.split("/")[3] + " on " + marker.datetaken;
+
+                popupContent.appendChild(popupText);
+                popupContent.appendChild(popupImageContainer);
+                popupContent.appendChild(popupLinksContainer);
+
+                // var marker = L.marker([marker.latitude, marker.longitude], {icon: iconMAPEX}).addTo(map);
+                // marker.bindPopup(popupContent);
+
+                 
+
+                return popupContent;
+            }
+
+            function createPopupContent(marker){
+                var [popupContent, popupImageContainer] = popupParent(marker)
+
+                // Get the preview picture from the URL
+                var popupImage = document.createElement('img');
+                popupImage.src = marker.url_n;
+
+                popupImageContainer.appendChild(popupImage);
+
+                // Create the Links
+                // create a container for the links
+                var popupLinksContainer = document.createElement('div');
+                popupLinksContainer.style.display = 'flex';
+                //popupLinksContainer.style.width = marker.width_n;
+
+                // create a link to the original image URL
+                var popupLinkToOriginal = document.createElement('a');
+                popupLinkToOriginal.href = marker.url_o;
+                popupLinkToOriginal.target = '_blank';
+                popupLinkToOriginal.textContent = 'Large Image';
+                popupLinkToOriginal.style.width = '200px';
+
+                // create a link to the creator's Flickr profile
+                var popupLinkToProfile = document.createElement('a');
+                popupLinkToProfile.href = 'https://www.flickr.com/photos/' + marker.owner;
+                popupLinkToProfile.target = '_blank';
+                popupLinkToProfile.textContent = 'Owners profile';
+                popupLinkToProfile.style.textAlign = 'right';
+                popupLinkToProfile.style.width = '100px';
+
+                popupLinksContainer.appendChild(popupLinkToOriginal);
+                popupLinksContainer.appendChild(popupLinkToProfile);
+                
+
+                var popupText = document.createElement('h2');
+                popupText.textContent = marker.title + " - " + marker.datetaken;
+
+                popupContent.appendChild(popupText);
+                popupContent.appendChild(popupImageContainer);
+                popupContent.appendChild(popupLinksContainer);
+
+                // var marker = L.marker([marker.latitude, marker.longitude], {icon: icon}).addTo(map);
+                // marker.bindPopup(popupContent);
+
+                //popupContents.push(popupContent);
+
+                return popupContent;
+
+            }
+
+            function removeAllMarkers1(markers) {
+                for (var i = 0; i < markers.length; i++) {
+                    map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                    });
+                }
+            }
+
+            // function removeAllMarkersMAPEX(markersGroup) {
+            //     map.eachLayer(function(layer) {
+            //     if (layer instanceof L.Marker) {
+            //         if (layer.options.icon.options.iconUrl == "photo3.svg"){
+            //             console.log(layer.options.icon.options.iconUrl);
+            //             map.removeLayer(layer);
+            //         }
+            //     } else if (layer.options.tag == 'mapex') {
+            //         map.removeLayer(layer);
+            //     }
+            //     });
+            // }
+
+            function removeAllMarkers(tag) {
+                map.eachLayer(function(layer) {
+                // if (layer instanceof L.Marker) {
+                //     if (layer.options.icon.options.iconUrl == "photo2.svg"){
+                //         //console.log(layer.options.icon.options.iconUrl);
+                //         map.removeLayer(layer);
+                //     }
+                // } else 
+                
+                if (layer.options.tag == tag) {
+                    map.removeLayer(layer);
+                }
+                });
+            }
+
+            function addAllMarkers(markers) {
+                var markerGroup = L.markerClusterGroup({
+                disableClusteringAtZoom: 15
+                });
+                for (var i = 0; i < markers.length; i++) {
+                    var marker = L.marker([markers[i].latitude, markers[i].longitude], {icon: icon});
+                    marker.bindPopup(createPopupContent(markers[i]));
+                    marker.options.tag = 'nomapex';
+                
+                    markerGroup.addLayer(marker);
+                    
+                }
+                markerGroup.options.tag = 'nomapex'
+                map.addLayer(markerGroup);
+            }
+            
+            function addAllMarkersMAPEX(markers_mapex) {
+                var markerGroupMAPEX = L.markerClusterGroup({
+                disableClusteringAtZoom: 16
+                });
+                for (var i = 0; i < markers_mapex.length; i++) {
+                    var marker = L.marker([markers_mapex[i].latitude, markers_mapex[i].longitude], {icon: iconMAPEX});
+                    marker.bindPopup(createMAPEXContent(markers_mapex[i]));
+                    markerGroupMAPEX.addLayer(marker);
+                    marker.options.tag = 'mapex';
+                }
+                markerGroupMAPEX.options.tag = 'mapex'
+                //markerGroupMAPEX.options
+                map.addLayer(markerGroupMAPEX);
+            }
+
+            var checkbox = document.getElementById("toggleMarkers");
+            var checkbox2 = document.getElementById("toggleMarkersMAPEX");
+
+            checkbox.addEventListener("change", function() {
+                if (this.checked) {
+                    removeAllMarkers('nomapex');
+                } else {
+                    addAllMarkers(markers);
+                }
+            });
+
+            checkbox2.addEventListener("change", function() {
+                if (this.checked) {
+                    removeAllMarkers('mapex');
+                } else {
+                    addAllMarkersMAPEX(markers_mapex);
+                }
+            });
+
+            addAllMarkers(markers);
+            addAllMarkersMAPEX(markers_mapex);
+
+            var markerOptions = {
+                radius: 7,
+                fillColor: "blue",
+                color: "blue",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            };
+
+            if ('geolocation' in navigator) {
+                var marker = null; // Reference to the position
+
+                // Create a button element
+                var button = document.createElement('button');
+                button.innerHTML = '<i class="fas fa-crosshairs"></i>';
+                button.style.position = 'absolute';
+                button.style.left = '10px';
+                button.style.top = '100px';
+                //button.style.transform = 'translate(50%, -50%)';
+                button.style.zIndex = "1000";
+                button.style.fontSize = '24px';
+                
+                // Append the button to the map container
+                map.getContainer().appendChild(button);
+                
+                // Add a click event listener to the button
+                button.addEventListener('click', function() {
+                    if (marker) {
+                        map.setView(marker.getLatLng(), 16); // Focus the map on the marker's position
+                    }
+                });
+
+                setInterval(function() {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                    var latlng = [position.coords.latitude, position.coords.longitude];
+                    var latlng = [47.010437, 12.652804];
+                    
+                    if (marker) {
+                        marker.remove(); // Remove the previous position
+                    }
+                    
+                    marker = L.circleMarker(latlng, markerOptions).addTo(map); // Add the new position
+                    //map.setView(latlng, 16);
+                    });
+                }, 3000);
+                } else {
+                console.log('Geolocation is not supported by your browser');
+            }
+
+        </script>
+    </body>
